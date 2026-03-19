@@ -1,0 +1,5 @@
+model,accuracy,precision_macro,precision_weighted,recall_macro,recall_weighted,f1_macro,f1_weighted,roc_auc,specificity
+LightGBM,0.8636,0.7053,0.8331,0.586,0.8636,0.6079,0.8363,0.8261,0.586
+XGBoost,0.8632,0.703,0.8347,0.5974,0.8632,0.621,0.8395,0.8239,0.5974
+LogisticRegression,0.7351,0.6318,0.8611,0.7458,0.7351,0.6353,0.7729,0.8208,0.7458
+RandomForest,0.7864,0.6427,0.8519,0.7244,0.7864,0.6608,0.8097,0.8175,0.7244

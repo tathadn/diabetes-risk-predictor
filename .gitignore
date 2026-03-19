@@ -1,0 +1,101 @@
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.installed.cfg
+lib/
+lib64/
+MANIFEST
+*.pyo
+
+# ============================================================
+# Virtual environments
+# ============================================================
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================
+# Environment variables / secrets
+# ============================================================
+.env
+.env.*
+*.env
+
+# ============================================================
+# Jupyter
+# ============================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*.ipynb_metadata/
+
+# ============================================================
+# Data files — raw, processed, predictions
+# ============================================================
+data/raw/*.csv
+data/raw/*.xlsx
+data/raw/*.json
+data/processed/*.csv
+data/processed/*.npy
+data/predictions/*.csv
+
+# ============================================================
+# Trained model artefacts
+# ============================================================
+results/models/*.pkl
+results/models/*.h5
+results/models/*.pt
+results/models/*.pth
+results/models/*.onnx
+
+# ============================================================
+# OS / editor junk
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# Testing / coverage
+# ============================================================
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ============================================================
+# Type checking
+# ============================================================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ============================================================
+# Documentation builds
+# ============================================================
+docs/_build/
+site/
