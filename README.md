@@ -253,6 +253,14 @@ All four models were evaluated on a held-out 20% test split (~50,000 samples) of
 
 **Best model: LightGBM** (selected by ROC-AUC). All models exceeded every performance target.
 
+### ROC Curves
+
+![ROC Curves](results/plots/roc_curves.png)
+
+### Precision-Recall Curves
+
+![Precision-Recall Curves](results/plots/precision_recall_curves.png)
+
 **Performance targets**:
 
 | Metric | Target | Best achieved |
