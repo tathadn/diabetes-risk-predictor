@@ -16,7 +16,8 @@ Surveillance System (BRFSS), sourced from Kaggle.
 6. [Results](#results)
 7. [Dependencies](#dependencies)
 8. [Contributing](#contributing)
-9. [License](#license)
+9. [Tools Used](#tools-used)
+10. [License](#license)
 
 ---
 
@@ -305,6 +306,14 @@ Contributions, bug reports, and feature requests are welcome.
 4. Ensure all tests pass: `pytest tests/ -v`.
 5. Format your code: `black src/ tests/`.
 6. Open a pull request with a clear description of your changes.
+
+---
+
+## Tools Used
+
+| Tool | Purpose |
+|------|---------|
+| [Claude](https://claude.ai) (Anthropic) | AI assistant used during development |
 
 ---
 
