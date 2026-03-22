@@ -13,11 +13,15 @@ Surveillance System (BRFSS), sourced from Kaggle.
 3. [Project Structure](#project-structure)
 4. [Installation](#installation)
 5. [Usage Guide](#usage-guide)
-6. [Results](#results)
-7. [Dependencies](#dependencies)
-8. [Contributing](#contributing)
-9. [Tools Used](#tools-used)
-10. [License](#license)
+6. [Exploratory Data Analysis](#exploratory-data-analysis)
+7. [Preprocessing](#preprocessing)
+8. [Model Training](#model-training)
+9. [Results](#results)
+10. [Final Predictions](#final-predictions)
+11. [Dependencies](#dependencies)
+12. [Contributing](#contributing)
+13. [Tools Used](#tools-used)
+14. [License](#license)
 
 ---
 
@@ -181,55 +185,25 @@ Open and run `notebooks/01_eda_analysis.ipynb`:
 jupyter notebook notebooks/01_eda_analysis.ipynb
 ```
 
-This notebook loads the raw dataset, visualises distributions, correlation heatmaps,
-outlier box plots, and feature-target relationships. Key insights are summarised in
-the final markdown cell.
-
 ### Phase 2 — Preprocessing
 
-Run `notebooks/02_preprocessing.ipynb`:
-
-- Imputes any missing values.
-- Caps IQR outliers on continuous columns.
-- Performs stratified 80/20 train-test split.
-- Applies StandardScaler (fit on training data only).
-- Applies SMOTE to the training set to balance the class distribution.
-- Saves all processed arrays to `data/processed/`.
+Run `notebooks/02_preprocessing.ipynb`.
 
 ### Phase 3 — Model Training
 
-Run `notebooks/03_model_training.ipynb`:
-
-- Trains four models: Logistic Regression, Random Forest, XGBoost, LightGBM.
-- Runs RandomizedSearchCV for XGBoost hyperparameter tuning.
-- Optionally trains a Keras neural network (requires TensorFlow).
-- Runs 3-fold cross-validation for all models.
-- Saves all fitted models to `results/models/`.
+Run `notebooks/03_model_training.ipynb`.
 
 ### Phase 4 — Evaluation
 
-Run `notebooks/04_evaluation.ipynb`:
-
-- Loads all saved models and the test set.
-- Computes accuracy, precision, recall, F1 (macro + weighted), ROC-AUC, specificity.
-- Plots confusion matrices, ROC curves, Precision-Recall curves, feature importance.
-- Checks for overfitting (train vs test gap).
-- Selects the best model by ROC-AUC and writes its name to `results/reports/best_model.txt`.
+Run `notebooks/04_evaluation.ipynb`.
 
 ### Phase 5 — Final Predictions
 
-Run `notebooks/05_final_predictions.ipynb`:
-
-- Loads the best model.
-- Generates class predictions and probabilities on the test set.
-- Exports a rich predictions CSV to `data/predictions/predictions.csv` with columns:
-  - Original features, true label, predicted class, per-class probabilities, confidence.
-- Writes a model card to `results/reports/model_card.md`.
+Run `notebooks/05_final_predictions.ipynb`.
 
 ### Running Tests
 
 ```bash
-# From the project root
 pytest tests/ -v --tb=short
 ```
 
@@ -241,36 +215,172 @@ pytest tests/ --cov=src --cov-report=html
 
 ---
 
+## Exploratory Data Analysis
+
+Notebook `01_eda_analysis.ipynb` explores the raw dataset through distributions, correlations, and feature-target relationships.
+
+### Target Distribution & Class Balance
+
+The dataset has a severe class imbalance: ~84% of records are class 0 (no diabetes) and ~16% are class 1 (diabetes/pre-diabetes). This imbalance motivates the use of SMOTE during preprocessing.
+
+| | |
+|---|---|
+| ![Target Distribution](results/plots/target_distribution.png) | ![Class Balance](results/plots/class_balance.png) |
+
+### Feature Distributions
+
+Distribution of all 21 features across the dataset. Binary features show strong skews; continuous features (BMI, MentHlth, PhysHlth) are right-skewed.
+
+![Feature Distributions](results/plots/feature_distributions.png)
+
+### Correlation Heatmap
+
+Pairwise Pearson correlations across all features. Notable clusters of positively correlated health indicators (HighBP, HighChol, HeartDiseaseorAttack) suggest compounding risk factors.
+
+![Correlation Heatmap](results/plots/correlation_heatmap.png)
+
+### Feature–Target Relationships
+
+Mean feature values stratified by diabetes status. Features with the largest gap between classes (GenHlth, HighBP, BMI, Age) are the most predictive.
+
+![Feature–Target Relationships](results/plots/feature_target_relationships.png)
+
+### Outlier Analysis (Box Plots)
+
+Box plots of continuous and ordinal features identifying extreme values. BMI, MentHlth, and PhysHlth contain significant upper-tail outliers.
+
+![Box Plots](results/plots/box_plots.png)
+
+---
+
+## Preprocessing
+
+Notebook `02_preprocessing.ipynb` prepares the data for modelling through the following steps:
+
+1. **Outlier capping** — IQR-based capping on continuous columns (BMI, MentHlth, PhysHlth).
+2. **Train-test split** — Stratified 80/20 split (~202,944 train / ~50,736 test).
+3. **Scaling** — `StandardScaler` fit exclusively on training data, applied to both splits.
+4. **SMOTE** — Synthetic Minority Oversampling applied to the training set only to balance classes.
+
+### Outlier Treatment
+
+| Before | After |
+|--------|-------|
+| ![Outliers Before](results/plots/outliers_before.png) | ![Outliers After](results/plots/outliers_after.png) |
+
+IQR-based capping effectively removes extreme values while preserving the underlying distributions.
+
+---
+
+## Model Training
+
+Notebook `03_model_training.ipynb` trains four classifiers and runs cross-validation.
+
+### Models Trained
+
+| Model | Key Hyperparameters |
+|-------|---------------------|
+| Logistic Regression | `C=1.0`, `max_iter=1000`, `solver=lbfgs` |
+| Random Forest | `n_estimators=100`, `max_depth=None` |
+| XGBoost | Tuned via `RandomizedSearchCV` (50 iterations, 3-fold CV) |
+| LightGBM | Default with early stopping |
+
+### Cross-Validation Comparison
+
+3-fold stratified cross-validation ROC-AUC scores across all models. LightGBM and XGBoost consistently outperform the others.
+
+![CV Comparison](results/plots/cv_comparison.png)
+
+---
+
 ## Results
 
-All four models were evaluated on a held-out 20% test split (~50,000 samples) of the CDC BRFSS 2015 dataset.
+All models were evaluated on the held-out 20% test split (~50,736 samples).
 
-| Model | Accuracy | ROC-AUC | F1-weighted | F1-macro |
-|-------|----------|---------|-------------|----------|
-| **LightGBM** ⭐ | **86.4%** | **82.6%** | **83.6%** | 60.8% |
-| XGBoost | 86.3% | 82.4% | 84.0% | 62.1% |
-| Random Forest | 78.6% | 81.8% | 81.0% | 66.1% |
-| Logistic Regression | 73.5% | 82.1% | 77.3% | 63.5% |
+### Overall Performance Comparison
+
+![Model Comparison](results/plots/model_comparison.png)
+
+### Full Metrics Table
+
+| Model | Accuracy | ROC-AUC | F1-weighted | F1-macro | Precision (weighted) | Recall (weighted) | Specificity |
+|-------|----------|---------|-------------|----------|----------------------|-------------------|-------------|
+| **LightGBM** ⭐ | **86.4%** | **82.6%** | **83.6%** | 60.8% | 83.3% | 86.4% | 58.6% |
+| XGBoost | 86.3% | 82.4% | 84.0% | 62.1% | 83.5% | 86.3% | 59.7% |
+| Logistic Regression | 73.5% | 82.1% | 77.3% | 63.5% | 86.1% | 73.5% | 74.6% |
+| Random Forest | 78.6% | 81.8% | 81.0% | 66.1% | 85.2% | 78.6% | 72.4% |
 
 **Best model: LightGBM** (selected by ROC-AUC). All models exceeded every performance target.
 
+### Performance Targets
+
+| Metric | Target | Best Achieved |
+|--------|--------|---------------|
+| Accuracy | ≥ 0.70 | **0.864** (LightGBM) |
+| ROC-AUC | ≥ 0.75 | **0.826** (LightGBM) |
+| F1-weighted | ≥ 0.65 | **0.840** (XGBoost) |
+
+> **Note on class imbalance**: The dataset is heavily skewed (~84% class 0). SMOTE oversampling is applied to the training set to mitigate this. Macro-averaged metrics reflect per-class performance more honestly than accuracy alone.
+
 ### ROC Curves
+
+Receiver Operating Characteristic curves for all four models. LightGBM achieves the highest AUC (0.826), closely followed by XGBoost (0.824).
 
 ![ROC Curves](results/plots/roc_curves.png)
 
 ### Precision-Recall Curves
 
+Precision-Recall curves are more informative under class imbalance. A higher area under the PR curve indicates better performance on the minority class (diabetes).
+
 ![Precision-Recall Curves](results/plots/precision_recall_curves.png)
 
-**Performance targets**:
+### Confusion Matrices
 
-| Metric | Target | Best achieved |
-|--------|--------|---------------|
-| Accuracy | ≥ 0.70 | 0.864 (LightGBM) |
-| ROC-AUC | ≥ 0.75 | 0.826 (LightGBM) |
-| F1-weighted | ≥ 0.65 | 0.840 (XGBoost) |
+Per-model confusion matrices on the test set. Each cell shows absolute counts (top) and row-normalised rates (bottom).
 
-> **Note on class imbalance**: The dataset is heavily skewed (~84% class 0 — no diabetes). SMOTE oversampling is applied to the training set to mitigate this. Macro-averaged metrics reflect per-class performance more honestly than accuracy alone.
+| LightGBM | XGBoost |
+|----------|---------|
+| ![Confusion Matrix — LightGBM](results/plots/confusion_matrix_LightGBM.png) | ![Confusion Matrix — XGBoost](results/plots/confusion_matrix_XGBoost.png) |
+
+| Random Forest | Logistic Regression |
+|---------------|---------------------|
+| ![Confusion Matrix — Random Forest](results/plots/confusion_matrix_RandomForest.png) | ![Confusion Matrix — Logistic Regression](results/plots/confusion_matrix_LogisticRegression.png) |
+
+### Feature Importance
+
+Feature importance scores extracted from tree-based models. **GenHlth**, **BMI**, **Age**, **HighBP**, and **HighChol** consistently rank as the top predictors across all three tree models.
+
+#### LightGBM Feature Importance
+![Feature Importance — LightGBM](results/plots/feature_importance_LightGBM.png)
+
+#### XGBoost Feature Importance
+![Feature Importance — XGBoost](results/plots/feature_importance_XGBoost.png)
+
+#### Random Forest Feature Importance
+![Feature Importance — Random Forest](results/plots/feature_importance_RandomForest.png)
+
+### Learning Curve — LightGBM
+
+The learning curve for the best model shows training and cross-validation scores as a function of training set size. The narrow gap between train and CV scores indicates low overfitting.
+
+![Learning Curve — LightGBM](results/plots/learning_curve_LightGBM.png)
+
+---
+
+## Final Predictions
+
+Notebook `05_final_predictions.ipynb` loads the best model (LightGBM) and exports predictions on the test set.
+
+### Output
+
+- **`data/predictions/predictions.csv`** — Contains original features, true label, predicted class, per-class probabilities, and confidence score for each test sample.
+- **`results/reports/model_card.md`** — Full model card with performance summary.
+
+### Prediction Confidence Distribution
+
+Distribution of the model's confidence (max predicted probability) across all test samples. High confidence on both classes indicates a well-calibrated model.
+
+![Confidence Distribution](results/plots/confidence_distribution.png)
 
 ---
 
